@@ -1,0 +1,9 @@
+{
+  "target_field_name": "Target",
+  "translations_field_name": "Translations",
+  "pronunciation_field_name": "Pronunciation",
+  "audio_url_field_name": "AudioURL",
+  "examples_field_name": "Examples",
+  "mistral_api_key": "LSI6vejvK9JW0ByQG7AIoLpJzl0M9Wjq",
+  "mistral_model": "ministral-8b-latest"
+}
