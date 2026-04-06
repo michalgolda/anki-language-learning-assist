@@ -1,6 +1,6 @@
 import random
 import logging
-from typing import Protocol
+from abc import ABC, abstractmethod
 
 from .ai import AIService
 from .models import WordData
@@ -10,11 +10,12 @@ logger = logging.getLogger("anki_language_assist")
 _MAX_EXAMPLES = 5
 
 
-class WordDataEnricher(Protocol):
+class WordDataEnricher(ABC):
+    @abstractmethod
     def enrich(self, data: WordData) -> WordData: ...
 
 
-class TranslationDeduplicator:
+class TranslationDeduplicator(WordDataEnricher):
     def __init__(self, ai_service: AIService) -> None:
         self._ai_service = ai_service
 
@@ -24,7 +25,7 @@ class TranslationDeduplicator:
         return data
 
 
-class ExampleEnricher:
+class ExampleEnricher(WordDataEnricher):
     def __init__(self, ai_service: AIService) -> None:
         self._ai_service = ai_service
 
