@@ -16,8 +16,9 @@ from aqt.qt import QAction
 
 from .ai import MistralAIService
 from .dialogs import CardExportDialog, CardGeneratorDialog, apply_data_to_note
+from .enrichers import ExampleEnricher, TranslationDeduplicator
 from .fetcher import WordDataFetcher
-from .providers import CambridgeDictionaryProvider
+from .providers import CambridgeDictionaryProvider, DikiDictionaryProvider, ProviderChain
 
 # ---------------------------------------------------------------------------
 # Config
@@ -48,12 +49,14 @@ _DEFAULT_EXPORT_FORMAT = (
 # Composition root — wire dependencies
 # ---------------------------------------------------------------------------
 
+_ai = MistralAIService(
+    api_key=config.get("mistral_api_key", ""),
+    model=config.get("mistral_model", "ministral-8b-latest"),
+)
+
 _fetcher = WordDataFetcher(
-    provider=CambridgeDictionaryProvider(),
-    ai_service=MistralAIService(
-        api_key=config.get("mistral_api_key", ""),
-        model=config.get("mistral_model", "ministral-8b-latest"),
-    ),
+    provider=ProviderChain([CambridgeDictionaryProvider(), DikiDictionaryProvider()]),
+    enrichers=[TranslationDeduplicator(_ai), ExampleEnricher(_ai)],
 )
 
 _current_editor = None
@@ -68,7 +71,8 @@ def _fill_note(note, query: str) -> None:
     def update_note() -> None:
         apply_data_to_note(note, data, pronunciation_field_name,
                            audio_url_field_name, translations_field_name, examples_field_name)
-        mw.col.update_note(note)
+        if note.id:
+            mw.col.update_note(note)
         if _current_editor:
             _current_editor.loadNote()
 
